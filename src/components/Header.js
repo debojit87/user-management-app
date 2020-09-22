@@ -1,6 +1,7 @@
 import React ,{Component} from 'react';
 import '../css/index.css';
 import { Link } from 'react-router-dom';
+import '../css/navbar.css';
 
 class Header extends Component{
 
@@ -25,10 +26,10 @@ class Header extends Component{
       </li>
       <li><Link to="/ContactUs">Contact Us</Link></li>
     </ul>
-    <ul className="nav navbar-nav navbar-right">
+   {/* <ul className="nav navbar-nav navbar-right">
       <li><Link to="/Register"><span className="glyphicon glyphicon-user"></span> Sign Up</Link></li>
       <li><Link to="Login"><span className="glyphicon glyphicon-log-in"></span> Login</Link></li>
-    </ul>
+    </ul>*/}
   </div>
 </nav>
         );
