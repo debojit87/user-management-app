@@ -81,8 +81,9 @@ changeAddressHandler = event =>{
 			  
  handleAddUserSubmit = event =>{
 	event.preventDefault();
-	console.log(this.state.first_name,  this.state.last_name, this.state.email);
+	console.log(this.state.id,this.state.first_name,  this.state.last_name, this.state.email);
 	const addUserRequest = {
+		id: this.state.id,
 		first_name: this.state.first_name,
 		last_name: this.state.last_name,
 		email: this.state.email,
@@ -91,8 +92,14 @@ changeAddressHandler = event =>{
 	Axios.post("https://reqres.in/api/users",addUserRequest)
 	.then(response =>{
 		console.log(response);
+		let dataToAdd = this.state.users;
+        dataToAdd.push(addUserRequest);
+        this.setState({
+			users: dataToAdd
+		})
 	})
 	this.setState({
+		id: '',
 		first_name: '',
 		last_name: '',
 		email: '',
@@ -102,14 +109,15 @@ changeAddressHandler = event =>{
 
 	 handleEditUserSubmit = event =>{
 		event.preventDefault();
-		console.log(this.state.first_name,  this.state.last_name, this.state.email);
-		const addUserRequest = {
+		console.log(this.state.id,this.state.first_name,  this.state.last_name, this.state.email);
+		const editUserRequest = {
+			id: this.state.id,
 			first_name: this.state.first_name,
 			last_name: this.state.last_name,
 			email: this.state.email,
 			address: this.state.address
 		};
-		Axios.post("https://reqres.in/api/users",addUserRequest)
+		Axios.put("https://reqres.in/api/users/"+this.state.id,editUserRequest)
 		.then(response =>{
 			console.log(response);
 		})
@@ -130,7 +138,6 @@ renderTableRecords = () =>{
 				console.log(last_name);
 				console.log(email);
 				return(
-					
 					<tr key={index}>
 							<td>
 								<span className="custom-checkbox">
@@ -148,9 +155,8 @@ renderTableRecords = () =>{
 							<a href="#deleteUserModal" class="delete" data-toggle="modal" ><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
 							</td>
 </tr>
-					
 				)
-			})
+			});
 			   } 
 	
 
@@ -191,8 +197,27 @@ renderTableRecords = () =>{
 						</tr>
 					</thead>
 					<tbody>
-						{this.renderTableRecords()}
 						
+						{this.state.users.map((user,index)=>{
+				const {id, first_name,last_name,email } = user;
+					return (<tr key={index}>
+							<td>
+								<span className="custom-checkbox">
+									<input type="checkbox" id="checkbox1" name="options[]" value="1"></input>
+									<label for="checkbox1"></label>
+								</span>
+							</td>
+							<td>{id}</td>
+						<td>{first_name}</td>
+						<td>{last_name}</td>
+						<td>{email}</td>
+						<td>
+						
+							<a href="#editUserModal" class="edit" data-toggle="modal" data-backdrop="static" onClick={()=>this.sendDataToEditUserModal(user)}><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+							<a href="#deleteUserModal" class="delete" data-toggle="modal" ><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+							</td>
+</tr>)
+			})}
 					</tbody>
 				</table>
 				{/*<div className="clearfix">
@@ -259,7 +284,7 @@ renderTableRecords = () =>{
 				<form>
 					<div className="modal-header">						
 						<h4 className="modal-title">Edit User</h4>
-						<button type="button" className="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<button type="button" className="close" onClick={()=>this.clearState()} data-dismiss="modal" aria-hidden="true">&times;</button>
 					</div>
 					<div className="modal-body">	
 					<div className="form-group">
@@ -302,7 +327,7 @@ renderTableRecords = () =>{
 					</div>
 					<div className="modal-body">					
 						<p>Are you sure you want to delete these Records?</p>
-						<p class="text-warning"><small>This action cannot be undone.</small></p>
+						<p className="text-warning"><small>This action cannot be undone.</small></p>
 					</div>
 					<div className="modal-footer">
 						<input type="button" className="btn btn-default" data-dismiss="modal" value="Cancel"></input>
