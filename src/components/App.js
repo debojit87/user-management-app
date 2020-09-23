@@ -5,7 +5,7 @@ import { BrowserRouter, Route} from 'react-router-dom';
 import Home from './Home';
 import ContactUs from './ContactUs';
 import ManageEmployees from './ManageEmployees';
-import ViewEmployees from './ViewEmployees';
+//import ViewEmployees from './ViewEmployees';
 import ManageUsers from './ManageUsers';
 import '../css/index.css';
 

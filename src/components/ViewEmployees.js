@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import Axios from 'axios';
 import '../css/index.css';
 import ViewEmployeeModal from './ManageUsers';
@@ -71,7 +70,7 @@ Axios.get("http://dummy.restapiexample.com/api/v1/employees").then(
     
     render(){
 
-if(this.state.showEmpDetails == true){
+if(this.state.showEmpDetails === true){
 return(<ViewEmployeeModal/>);
       }else{
         return(

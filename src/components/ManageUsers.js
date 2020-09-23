@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import Axios from 'axios';
 import '../css/index.css';
 import '../css/bootstraptable.css';
+import ResponseAlert from './ResponseAlert';
 
 
 class ManageUser extends React.Component {
@@ -10,13 +10,14 @@ class ManageUser extends React.Component {
 	state = {
 		users:[],
 		user:{
-		
 		},
 		id: '',
 		first_name: '',
 		last_name: '',
 		email: '',
-		address: ''
+		address: '',
+		isSuccess:null,
+		errorMessage: ''
 	}
 
 	componentDidMount=()=>{
@@ -56,7 +57,7 @@ changeAddressHandler = event =>{
 				address: event.target.value
 			});
 			 }
-	sendDataToEditUserModal = user =>{
+ sendDataToUserModal = user =>{
 	console.log('req items:' + user.first_name);
 	 this.setState({
 		 id: user.id,
@@ -74,7 +75,11 @@ changeAddressHandler = event =>{
 		 first_name: '',
 		 last_name: '',
 		 email: '',
-		 address: ''
+		 address: '',
+		 isSuccess: null,
+		 successMessage: '',
+		 errorMessage: ''
+
 		
 	 });
  }
@@ -95,20 +100,23 @@ changeAddressHandler = event =>{
 		let dataToAdd = this.state.users;
         dataToAdd.push(addUserRequest);
         this.setState({
-			users: dataToAdd
+			users: dataToAdd,
+			isSuccess: true,
+			successMessage: "User have been added succesfully."
 		})
 	})
-	this.setState({
-		id: '',
-		first_name: '',
-		last_name: '',
-		email: '',
-		address: ''
-	});
+	.catch(error => {
+		this.setState({
+			errorMessage: "User cannot be added.Internal Server Error!",
+			isSuccess: false
+		})
+      })
+	this.clearState();
 	 }
 
 	 handleEditUserSubmit = event =>{
 		event.preventDefault();
+		console.log(this.state.users);
 		console.log(this.state.id,this.state.first_name,  this.state.last_name, this.state.email);
 		const editUserRequest = {
 			id: this.state.id,
@@ -120,52 +128,33 @@ changeAddressHandler = event =>{
 		Axios.put("https://reqres.in/api/users/"+this.state.id,editUserRequest)
 		.then(response =>{
 			console.log(response);
+			let dataToEdit = this.state.users;
+			console.log('Before splice:'+ dataToEdit);
+			dataToEdit.splice(this.state.id,1,editUserRequest);
+			console.log('After splice:'+ dataToEdit);
+			//dataToEdit.push(editUserRequest);
+			console.log('After push:'+ dataToEdit);
+        this.setState({
+			isSuccess: true,
+			users: dataToEdit,
+			successMessage: "User have been updated succesfully."
 		})
+	})
+	.catch(error => {
 		this.setState({
-			first_name: '',
-			last_name: '',
-			email: '',
-			address: ''
-		});
+			errorMessage: "User cannot be updated.Internal Server Error!",
+			isSuccess: false
+		})
+      })
+	this.clearState();
 		 }
-
-	
-renderTableRecords = () =>{
-			return this.state.users.map((user,index)=>{
-				const {id, first_name,last_name,email } = user;
-				console.log(id);
-				console.log(first_name);
-				console.log(last_name);
-				console.log(email);
-				return(
-					<tr key={index}>
-							<td>
-								<span className="custom-checkbox">
-									<input type="checkbox" id="checkbox1" name="options[]" value="1"></input>
-									<label for="checkbox1"></label>
-								</span>
-							</td>
-							<td>{id}</td>
-						<td>{first_name}</td>
-						<td>{last_name}</td>
-						<td>{email}</td>
-						<td>
-						
-							<a href="#editUserModal" class="edit" data-toggle="modal" data-backdrop="static" onClick={()=>this.sendDataToEditUserModal(user)}><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
-							<a href="#deleteUserModal" class="delete" data-toggle="modal" ><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
-							</td>
-</tr>
-				)
-			});
-			   } 
-	
-
 			  
     render(){
 		const {id,first_name,last_name,email,address} = this.state
     return(
 <div >
 <div className="container">
+<ResponseAlert isSuccess={this.state.isSuccess} errorMessage={this.state.errorMessage} successMessage={this.state.successMessage}/>
 		<div className="table-responsive">
 			<div className="table-wrapper">
 				<div className="table-title">
@@ -175,20 +164,20 @@ renderTableRecords = () =>{
 						</div>
 						<div className="col-xs-6">
 						
-							<a href="#addUserModal" className="btn btn-success" data-toggle="modal"><i className="material-icons">&#xE147;</i> <span>Add New User</span></a>
-							<a href="#deleteUserModal" className="btn btn-danger" data-toggle="modal"><i className="material-icons">&#xE15C;</i> <span>Delete</span></a>						
+							<a href="#addUserModal" className="btn btn-success" data-backdrop="static" data-toggle="modal"><i className="material-icons">&#xE147;</i> <span>Add New User</span></a>
+							{/*<a href="#deleteUserModal" className="btn btn-danger" data-toggle="modal"><i className="material-icons">&#xE15C;</i> <span>Delete</span></a>	*/}					
 						</div>
 					</div>
 				</div>
 				<table className="table table-striped table-hover">
 					<thead>
 						<tr>
-							<th>
+							{/*<th>
 								<span className="custom-checkbox">
 									<input type="checkbox" id="selectAll"></input>
 									<label htmlFor="selectAll"></label>
 								</span>
-							</th>
+							</th>*/}
 							<th>User Id</th>
 							<th>First Name</th>
 							<th>Last Name</th>
@@ -197,24 +186,23 @@ renderTableRecords = () =>{
 						</tr>
 					</thead>
 					<tbody>
-						
 						{this.state.users.map((user,index)=>{
 				const {id, first_name,last_name,email } = user;
 					return (<tr key={index}>
-							<td>
+							{/*<td>
 								<span className="custom-checkbox">
 									<input type="checkbox" id="checkbox1" name="options[]" value="1"></input>
-									<label for="checkbox1"></label>
+									<label htmlFor="checkbox1"></label>
 								</span>
-							</td>
+							</td>*/}
 							<td>{id}</td>
 						<td>{first_name}</td>
 						<td>{last_name}</td>
 						<td>{email}</td>
 						<td>
-						
-							<a href="#editUserModal" class="edit" data-toggle="modal" data-backdrop="static" onClick={()=>this.sendDataToEditUserModal(user)}><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
-							<a href="#deleteUserModal" class="delete" data-toggle="modal" ><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+						    <a href="#viewUserModal" className="view" data-toggle="modal"  onClick={()=>this.sendDataToUserModal(user)}><i className="material-icons" data-toggle="tooltip" title="View">&#xe8a0;</i></a>
+							<a href="#editUserModal" className="edit" data-toggle="modal" data-backdrop="static" onClick={()=>this.sendDataToUserModal(user)}><i className="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+							{/*<a href="#deleteUserModal" class="delete" data-toggle="modal" ><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>*/}
 							</td>
 </tr>)
 			})}
@@ -236,14 +224,13 @@ renderTableRecords = () =>{
 		</div>  
     </div>
 	{/*<!-- Add User Modal HTML -->*/}
-	
 	<div id="addUserModal" className="modal fade">
 		<div className="modal-dialog">
 			<div className="modal-content">
 				<form>
 					<div className="modal-header">						
 						<h4 className="modal-title">Add User</h4>
-						<button type="button" className="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<button type="button" className="close" onClick={()=>this.clearState()} data-dismiss="modal" aria-hidden="true">&times;</button>
 					</div>
 					<div className="modal-body">	
 					<div className="form-group">
@@ -269,14 +256,13 @@ renderTableRecords = () =>{
 										
 					</div>
 					<div className="modal-footer">
-						<input type="button" className="btn btn-default" data-dismiss="modal" value="Cancel"></input>
-						<input type="submit" className="btn btn-success" value="Add" onClick={this.handleAddUserSubmit}></input>
+						<input type="button" className="btn btn-default" onClick={()=>this.clearState()} data-dismiss="modal" value="Cancel"></input>
+						<input type="submit" className="btn btn-success" data-dismiss="modal" value="Add" onClick={this.handleAddUserSubmit}></input>
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>  
-
 	{/*<!-- Edit Modal HTML -->*/}
 	<div id="editUserModal" className="modal fade">
 		<div className="modal-dialog">
@@ -310,14 +296,53 @@ renderTableRecords = () =>{
 					</div>
 					<div className="modal-footer">
 						<input type="button" className="btn btn-default" onClick={()=>this.clearState()} data-dismiss="modal" value="Cancel"></input>
-						<input type="submit" className="btn btn-info" value="Save" onClick={this.handleEditUserSubmit}></input>
+						<input type="submit" className="btn btn-info" data-dismiss="modal" value="Save" onClick={this.handleEditUserSubmit}></input>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	{/*<!-- View Modal HTML -->*/}
+	<div id="viewUserModal" className="modal fade">
+		<div className="modal-dialog">
+			<div className="modal-content">
+				<form>
+					<div className="modal-header">						
+						<h4 className="modal-title">View User</h4>
+						<button type="button" className="close" onClick={()=>this.clearState()} data-dismiss="modal" aria-hidden="true">&times;</button>
+					</div>
+					<div className="modal-body">	
+					<div className="form-group">
+							<label>User Id</label>
+							<input type="text" value={id} className="form-control" readOnly></input>
+						</div>				
+						<div className="form-group">
+							<label>First Name</label>
+							<input type="text" value={first_name} className="form-control" readOnly></input>
+						</div>
+						<div className="form-group">
+							<label>Last Name</label>
+							<input type="text" value={last_name}  className="form-control" readOnly></input>
+						</div>
+						<div className="form-group">
+							<label>Email</label>
+							<input type="email" value={email}  className="form-control" readOnly></input>
+						</div>
+						<div className="form-group">
+							<label>Address</label>
+							<textarea className="form-control"  value={address} readOnly></textarea>
+						</div>
+					</div>
+					<div className="modal-footer">
+						<input type="button" className="btn btn-info" onClick={()=>this.clearState()} data-dismiss="modal" value="Close"></input>
+						
 					</div>
 				</form>
 			</div>
 		</div>
 	</div>
 	{/*<!-- Delete Modal HTML -->*/}
-	<div id="deleteUserModal" class="modal fade">
+	<div id="deleteUserModal" className="modal fade">
 		<div className="modal-dialog">
 			<div className="modal-content">
 				<form>
@@ -337,6 +362,7 @@ renderTableRecords = () =>{
 			</div>
 		</div>
 	</div>
+	
 </div>
 
     );
